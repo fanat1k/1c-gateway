@@ -1,6 +1,7 @@
 package com.pereginiak.gateway1c;
 
 import android.util.Log;
+import com.pereginiak.gateway1c.web.WebServerListener;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -41,7 +42,7 @@ public class HealthChecker {
         return false;
     }
 
-    public static boolean isClientConnected(MainActivity.WebServerListener webServerListener) {
+    public static boolean isClientConnected(WebServerListener webServerListener) {
         return webServerListener.isClientConnected();
     }
 }

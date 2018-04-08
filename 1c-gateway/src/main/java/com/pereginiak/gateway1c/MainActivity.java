@@ -8,9 +8,10 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import com.pereginiak.gateway1c.web.WebServer;
+import com.pereginiak.gateway1c.web.WebServerListener;
 
 import java.io.IOException;
-import java.util.EventListener;
 
 public class MainActivity extends Activity {
 
@@ -60,7 +61,6 @@ public class MainActivity extends Activity {
 
     private void startWebServer() {
         Log.i(TAG, "startWebServer()");
-
         WebServer webServer = new WebServer(Properties.getWebServerPort(), new WebServerListener() {
             @Override
             public String getMessage() {
@@ -85,14 +85,6 @@ public class MainActivity extends Activity {
             Log.e(TAG, "Can't start webserver: " + e);
             e.printStackTrace();
         }
-    }
-
-    public interface WebServerListener extends EventListener {
-        String getMessage();
-
-        void putMessage(String message);
-
-        boolean isClientConnected();
     }
 
     /*

@@ -1,6 +1,8 @@
-package com.pereginiak.gateway1c;
+package com.pereginiak.gateway1c.web;
 
 import android.util.Log;
+import com.pereginiak.gateway1c.Constants;
+import com.pereginiak.gateway1c.HealthChecker;
 import fi.iki.elonen.NanoHTTPD;
 
 import java.util.List;
@@ -8,7 +10,7 @@ import java.util.Map;
 
 public class WebServer extends NanoHTTPD {
 
-    private MainActivity.WebServerListener webServerListener;
+    private WebServerListener webServerListener;
 
     private static final String GET_REQUEST = "/get";
     private static final String PUT_REQUEST = "/put";
@@ -20,7 +22,7 @@ public class WebServer extends NanoHTTPD {
 
     private static final String TAG = "WebServer";
 
-    public WebServer(int port, MainActivity.WebServerListener webServerListener) {
+    public WebServer(int port, WebServerListener webServerListener) {
         super(port);
         this.webServerListener = webServerListener;
     }
