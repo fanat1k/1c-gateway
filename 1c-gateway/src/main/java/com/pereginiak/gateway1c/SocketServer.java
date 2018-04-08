@@ -60,7 +60,6 @@ public class SocketServer extends Service {
         return currentSocketThread != null;
     }
 
-    //TODO(kasian @2018-03-22): return ONLY THE LAST value if any came from socket client
     public String getValueFromSocket() {
         Log.i(TAG, "getValueFromSocket()");
 
@@ -94,7 +93,7 @@ public class SocketServer extends Service {
         public void run() {
             Socket socket;
             try {
-                serverSocket = new ServerSocket(Constants.SOCKET_SERVER_PORT);
+                serverSocket = new ServerSocket(Properties.getSocketServerPort());
             } catch (IOException e) {
                 Log.e(TAG, "Can't start Server Socket:" + e);
                 e.printStackTrace();

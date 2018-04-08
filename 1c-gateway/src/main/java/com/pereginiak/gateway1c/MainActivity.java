@@ -12,9 +12,6 @@ import android.util.Log;
 import java.io.IOException;
 import java.util.EventListener;
 
-TODO1: put project to repository
-TODO2(kasian @2018-04-08): try to run this activity in background (from another main activity)
-
 public class MainActivity extends Activity {
 
     private SocketServer socketService;
@@ -27,23 +24,15 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        HealthChecker.isIpSetUp();
+        Properties.init(this);
 
         startSocketServer();
 
         startWebServer();
-    }
 
-/*
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        TextView outputView = (TextView) findViewById(R.id.outputView);
-        outputView.setMovementMethod(new ScrollingMovementMethod());
-        showLogcat();
+        //TODO(kasian @2018-04-08): check if it works to run app in background
+        //moveTaskToBack(true);
     }
-*/
 
     private void startSocketServer() {
         Intent socketServiceIntent = new Intent(this, SocketServer.class);
@@ -60,19 +49,19 @@ public class MainActivity extends Activity {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            //TODO(kasian @2018-03-22):
+            Log.e(TAG, "onServiceDisconnected()");
         }
 
         @Override
         public void onBindingDied(ComponentName name) {
-            //TODO(kasian @2018-03-22):
+            Log.e(TAG, "onBindingDied()");
         }
     };
 
     private void startWebServer() {
         Log.i(TAG, "startWebServer()");
 
-        WebServer webServer = new WebServer(Constants.WEB_SERVER_PORT, new WebServerListener() {
+        WebServer webServer = new WebServer(Properties.getWebServerPort(), new WebServerListener() {
             @Override
             public String getMessage() {
                 Log.i(TAG, "getMessage");
@@ -106,7 +95,16 @@ public class MainActivity extends Activity {
         boolean isClientConnected();
     }
 
-/*
+    /*
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        TextView outputView = (TextView) findViewById(R.id.outputView);
+        outputView.setMovementMethod(new ScrollingMovementMethod());
+        showLogcat();
+    }
+
     private void showLogcat() {
         try {
             Process process = Runtime.getRuntime().exec("logcat -d");

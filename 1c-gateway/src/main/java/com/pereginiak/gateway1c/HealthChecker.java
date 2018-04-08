@@ -26,7 +26,7 @@ public class HealthChecker {
                 while (inetAddresses.hasMoreElements()) {
                     InetAddress inetAddress = inetAddresses.nextElement();
                     if (!inetAddress.isLoopbackAddress()) {
-                        if (Constants.IP_ADDRESS.equals(inetAddress.getHostAddress())) {
+                        if (inetAddress.getHostAddress().equals(Properties.getIpAddress())) {
                             Log.i(TAG, "IP is OK");
                             return true;
                         }
