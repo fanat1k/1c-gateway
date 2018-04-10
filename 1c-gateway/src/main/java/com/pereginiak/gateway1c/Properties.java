@@ -5,14 +5,14 @@ import android.content.Context;
 public class Properties {
     private static Integer webServerPort;
     private static Integer socketServerPort;
-    private static String ipAddress;
+    private static String socketServerIpAddress;
 
     public static void init(Context context) {
         PropertyReader propertyReader = new PropertyReader(context);
 
         webServerPort = Integer.valueOf(propertyReader.getProperty("WEB_SERVER_PORT"));
         socketServerPort = Integer.valueOf(propertyReader.getProperty("SOCKET_SERVER_PORT"));
-        ipAddress = propertyReader.getProperty("IP_ADDRESS");
+        socketServerIpAddress = propertyReader.getProperty("SOCKET_SERVER_IP");
     }
 
 
@@ -24,7 +24,7 @@ public class Properties {
         return socketServerPort;
     }
 
-    public static String getIpAddress() {
-        return ipAddress;
+    public static String getSocketServerIpAddress() {
+        return socketServerIpAddress;
     }
 }

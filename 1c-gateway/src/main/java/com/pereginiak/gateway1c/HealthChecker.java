@@ -10,13 +10,7 @@ import java.util.Enumeration;
 
 public class HealthChecker {
 
-    private SocketServer socketServer;
-
     private static final String TAG = "HealthChecker";
-
-    public HealthChecker(SocketServer socketServer) {
-        this.socketServer = socketServer;
-    }
 
     public static boolean isIpSetUp() {
         try {
@@ -27,8 +21,8 @@ public class HealthChecker {
                 while (inetAddresses.hasMoreElements()) {
                     InetAddress inetAddress = inetAddresses.nextElement();
                     if (!inetAddress.isLoopbackAddress()) {
-                        if (inetAddress.getHostAddress().equals(Properties.getIpAddress())) {
-                            Log.i(TAG, "IP is OK");
+                        if (inetAddress.getHostAddress().equals(Properties.getSocketServerIpAddress())) {
+                            Log.i(TAG, "SocketServerIpAddress is configured:" + Properties.getSocketServerIpAddress());
                             return true;
                         }
                     }
@@ -38,7 +32,7 @@ public class HealthChecker {
             Log.e(TAG, e.toString());
         }
 
-        Log.w(TAG, "IP is not set");
+        Log.w(TAG, "SocketServerIpAddress is not configured");
         return false;
     }
 
