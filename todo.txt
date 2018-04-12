@@ -1,0 +1,97 @@
+1. think about security
+	- web requests to WebServer;
+	- 
+	
+Error:Android Source Generator: Error: Can't find bundle for base name messages.AndroidJpsBundle, locale en_US
+java.util.MissingResourceException: Can't find bundle for base name messages.AndroidJpsBundle, locale en_US
+	at java.util.ResourceBundle.throwMissingResourceException(ResourceBundle.java:1573)
+	at java.util.ResourceBundle.getBundleImpl(ResourceBundle.java:1396)
+	at java.util.ResourceBundle.getBundle(ResourceBundle.java:782)
+...
+
+FIX: convert project to Gradle:
+Right click on your project and open up Module Settings
+Click facets.
+Add Android-Gradle and apply.
+Remove "Adnroid" (leave only Android-Gradle)
+
+
+Error:A problem occurred configuring project ':app'.
+> Failed to find target with hash string 'android-26' in: C:\AndroidSDK
+
+FIX:
+1. add option to build.gradle:
+    android {
+        buildToolsVersion "27.0.3"
+2. install SDK and build tools. Settings->System Settings->Android SDK: set the latest Android 8.0 from the list and install it
+
+
+Error:Failed to complete Gradle execution.
+
+Cause:
+Supplied javaHome is not a valid folder. You supplied: C:\Program Files\Java\jdk1.8.0_92
+
+FIX: played with settings of SDK (try to set JDK there and back)
+
+
+Error:A problem occurred configuring project ':app'.
+> Failed to find Build Tools revision 26.0.2
+
+FIX: You should install Android SDK Build Tools 26.0.2 via Android SDK. Don't forget to check "Show Packages Details".
+
+
+Error:Could not resolve all files for configuration ':app:debugCompileClasspath'.
+> Could not resolve com.android.support:appcompat-v7:26.1.0.
+  Required by:
+      project :app
+   > Could not resolve com.android.support:appcompat-v7:26.1.0.
+      > Could not get resource 'https://dl.google.com/dl/android/maven2/com/android/support/appcompat-v7/26.1.0/appcompat-v7-26.1.0.pom'.
+         > Could not GET 'https://dl.google.com/dl/android/maven2/com/android/support/appcompat-v7/26.1.0/appcompat-v7-26.1.0.pom'.
+            > Connect to dl.google.com:443 [dl.google.com/172.217.16.14] failed: Connection timed out: connect
+   > Could not resolve com.android.support:appcompat-v7:26.1.0.
+      > Could not get resource 'https://jcenter.bintray.com/com/android/support/appcompat-v7/26.1.0/appcompat-v7-26.1.0.pom'.
+         > Could not GET 'https://jcenter.bintray.com/com/android/support/appcompat-v7/26.1.0/appcompat-v7-26.1.0.pom'.
+            > Connect to jcenter.bintray.com:443 [jcenter.bintray.com/159.122.18.156] failed: Connection timed out: connect
+			
+FIX: add to gradle.properties
+systemProp.http.proxyHost=ua-is-proxy.ee.playtech.corp
+systemProp.http.proxyPort=8080
+
+systemProp.https.proxyHost=ua-is-proxy.ee.playtech.corp
+systemProp.https.proxyPort=8080
+
+
+
+>android default activity not found
+FIX: If you see that error occur after upgrading versions of IntelliJ IDEA or Android Studio, or after Generating a new APK, you may need to refresh the IDE's cache.
+File -> Invalidate Caches / Restart...
+
+
+# port forwarding
+C:\AndroidSDK\platform-tools\adb.exe forward tcp:1111 tcp:1111
+C:\AndroidSDK\platform-tools\adb.exe forward tcp:8090 tcp:8090
+
+
+# this forwarding does not work :(
+telnet localhost 5554
+auth <c:\Users\kasian\.emulator_console_auth_token>
+redir list
+redir add tcp:1111:1111
+# redir del tcp:1111
+
+
+# Install APK to Android
+Copy the apk file to platform-tools in android-sdk linux folder.
+Open Terminal and navigate to platform-tools folder in android-sdk.
+Then Execute this command -
+./adb install FileName.apk
+
+adb -e install -r yourapp.apk	// -e - use emulator (if real device is connected also); -r - reinstall if app is already installed
+
+http://94.100.221.227:82/mt/
+
+topic:com.e1c.mobile.PushNOtificationReceiver
+
+
+fe80::ff:fe44:5566%wlan0
+
