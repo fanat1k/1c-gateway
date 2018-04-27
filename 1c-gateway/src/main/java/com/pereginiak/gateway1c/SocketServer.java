@@ -24,6 +24,8 @@ public class SocketServer extends Service {
 
     private static final String TAG = "SocketServer";
 
+    private static final String COMMAND_DELIMITER = ";";
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.v(TAG, "onStartCommand");
@@ -64,9 +66,19 @@ public class SocketServer extends Service {
         Log.i(TAG, "getValueFromSocket()");
 
         if (isClientConnected()) {
-            return socketClientValues.poll();
+            return getAllValuesFromSocket();
         }
         return null;
+    }
+
+    private synchronized String getAllValuesFromSocket() {
+        StringBuilder stringBuilder = new StringBuilder();
+        while (!socketClientValues.isEmpty()) {
+            stringBuilder.append(socketClientValues.poll());
+            stringBuilder.append(COMMAND_DELIMITER);
+        }
+
+        return stringBuilder.toString();
     }
 
     public void putValueToSocket(String message) {
