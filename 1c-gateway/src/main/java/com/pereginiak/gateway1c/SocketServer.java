@@ -12,7 +12,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
+//TODO(kasian @2018-04-27): add abstruction CommandReader to read/write commands
 public class SocketServer extends Service {
 
     private ServerSocket serverSocket;
@@ -20,9 +22,13 @@ public class SocketServer extends Service {
     //TODO(kasian @2018-04-08): make thread safe; is volatile enough for that?
     private volatile CommunicationThread currentSocketThread;
 
-    ConcurrentLinkedQueue<String> socketClientValues = new ConcurrentLinkedQueue<>();
+    //TODO(kasian @2018-04-28): synchronize it (block during deleting)
+    ConcurrentLinkedQueue<Command> socketClientValues = new ConcurrentLinkedQueue<>();
 
     private static final String TAG = "SocketServer";
+
+    //TODO(kasian @2018-04-28): move to config
+    private static final long INTERVAL = 60 * 5;    // 5 minutes
 
     private static final String COMMAND_DELIMITER = ";";
 
@@ -31,6 +37,9 @@ public class SocketServer extends Service {
         Log.v(TAG, "onStartCommand");
 
         Executors.newSingleThreadExecutor().submit(new ServerThread());
+        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(
+                new MessageQueueCleanerThread(), INTERVAL, INTERVAL, TimeUnit.SECONDS);
+
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -74,7 +83,7 @@ public class SocketServer extends Service {
     private synchronized String getAllValuesFromSocket() {
         StringBuilder stringBuilder = new StringBuilder();
         while (!socketClientValues.isEmpty()) {
-            stringBuilder.append(socketClientValues.poll());
+            stringBuilder.append(socketClientValues.poll().value);
             stringBuilder.append(COMMAND_DELIMITER);
         }
 
@@ -161,7 +170,8 @@ public class SocketServer extends Service {
                     } else {
                         if (!inputLine.isEmpty()) {
                             Log.i(TAG, "received from client: " + inputLine);
-                            socketClientValues.add(inputLine);
+
+                            socketClientValues.add(getCommand(inputLine));
 
                             //TODO(kasian @2018-03-22): answer to client? or later after successfull delivery to 1C?
                             //writeToSocket("[OK]");
@@ -181,6 +191,37 @@ public class SocketServer extends Service {
             out.write(inputLine);
             out.newLine();
             out.flush();
+        }
+    }
+
+    private class MessageQueueCleanerThread implements Runnable {
+        @Override
+        public void run() {
+            long currentTime = System.currentTimeMillis();
+            while (!socketClientValues.isEmpty()) {
+                Command cmd = socketClientValues.peek();
+                if (currentTime - cmd.date > INTERVAL * 1000) {
+                    Log.i(TAG, "remove value from queue due to timeout:" + cmd.value);
+                    socketClientValues.remove();
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    private Command getCommand(String inputLine) {
+        Command command = new Command(inputLine, System.currentTimeMillis());
+        return command;
+    }
+
+    private class Command {
+        private String value;
+        private long date;
+
+        public Command(String value, long date) {
+            this.value = value;
+            this.date = date;
         }
     }
 }
