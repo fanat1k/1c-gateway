@@ -25,20 +25,20 @@ public class SocketServer extends Service {
     //TODO(kasian @2018-04-28): synchronize it (block during deleting)
     ConcurrentLinkedQueue<Command> socketClientValues = new ConcurrentLinkedQueue<>();
 
-    private static final String TAG = "SocketServer";
-
-    //TODO(kasian @2018-04-28): move to config
-    private static final long INTERVAL = 60 * 5;    // 5 minutes
-
     private static final String COMMAND_DELIMITER = ";";
+
+    private static final long MESSAGE_LIVE_TIME = Properties.getMessageLiveTime() * 1000;
+
+    private static final String TAG = "SocketServer";
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.v(TAG, "onStartCommand");
 
         Executors.newSingleThreadExecutor().submit(new ServerThread());
+        Integer cleanInterval = Properties.getMessageCleanInterval();
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(
-                new MessageQueueCleanerThread(), INTERVAL, INTERVAL, TimeUnit.SECONDS);
+                new MessageQueueCleanerThread(), cleanInterval, cleanInterval, TimeUnit.SECONDS);
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -80,11 +80,14 @@ public class SocketServer extends Service {
         return null;
     }
 
-    private synchronized String getAllValuesFromSocket() {
+    private String getAllValuesFromSocket() {
         StringBuilder stringBuilder = new StringBuilder();
         while (!socketClientValues.isEmpty()) {
-            stringBuilder.append(socketClientValues.poll().value);
-            stringBuilder.append(COMMAND_DELIMITER);
+            Command cmd = socketClientValues.poll();
+            if (cmd != null) {
+                stringBuilder.append(cmd.getValue());
+                stringBuilder.append(COMMAND_DELIMITER);
+            }
         }
 
         return stringBuilder.toString();
@@ -197,14 +200,19 @@ public class SocketServer extends Service {
     private class MessageQueueCleanerThread implements Runnable {
         @Override
         public void run() {
+            Log.i(TAG, "start message cleaner");
             long currentTime = System.currentTimeMillis();
             while (!socketClientValues.isEmpty()) {
                 Command cmd = socketClientValues.peek();
-                if (currentTime - cmd.date > INTERVAL * 1000) {
-                    Log.i(TAG, "remove value from queue due to timeout:" + cmd.value);
-                    socketClientValues.remove();
-                } else {
-                    break;
+                if (cmd != null) {
+                    if (currentTime - cmd.getDate() > MESSAGE_LIVE_TIME) {
+                        Log.i(TAG, "remove value from queue due to timeout:" + cmd.getValue());
+
+                        //TODO(kasian @2018-05-07): think about synchronization since cmd could be already polled at this time
+                        socketClientValues.poll();
+                    } else {
+                        break;
+                    }
                 }
             }
         }
@@ -216,12 +224,20 @@ public class SocketServer extends Service {
     }
 
     private class Command {
-        private String value;
-        private long date;
+        private final String value;
+        private final long date;
 
         public Command(String value, long date) {
             this.value = value;
             this.date = date;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public long getDate() {
+            return date;
         }
     }
 }
