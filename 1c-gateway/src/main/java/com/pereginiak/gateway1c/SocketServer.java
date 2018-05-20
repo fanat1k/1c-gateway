@@ -12,7 +12,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 //TODO(kasian @2018-04-27): add abstruction CommandReader to read/write commands
 public class SocketServer extends Service {
@@ -36,9 +35,11 @@ public class SocketServer extends Service {
         Log.v(TAG, "onStartCommand");
 
         Executors.newSingleThreadExecutor().submit(new ServerThread());
+/*
         Integer cleanInterval = Properties.getMessageCleanInterval();
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(
                 new MessageQueueCleanerThread(), cleanInterval, cleanInterval, TimeUnit.SECONDS);
+*/
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -197,6 +198,7 @@ public class SocketServer extends Service {
         }
     }
 
+/*
     private class MessageQueueCleanerThread implements Runnable {
         @Override
         public void run() {
@@ -217,6 +219,7 @@ public class SocketServer extends Service {
             }
         }
     }
+*/
 
     private Command getCommand(String inputLine) {
         Command command = new Command(inputLine, System.currentTimeMillis());
@@ -238,6 +241,24 @@ public class SocketServer extends Service {
 
         public long getDate() {
             return date;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            Command command = (Command) o;
+
+            if (date != command.date) return false;
+            return value.equals(command.value);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = value.hashCode();
+            result = 31 * result + (int) (date ^ (date >>> 32));
+            return result;
         }
     }
 }
