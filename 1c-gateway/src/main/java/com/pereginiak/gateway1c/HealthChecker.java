@@ -10,8 +10,6 @@ import java.util.Enumeration;
 
 public class HealthChecker {
 
-    private static final String TAG = "HealthChecker";
-
     public static boolean isIpSetUp() {
         try {
             Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
@@ -22,17 +20,17 @@ public class HealthChecker {
                     InetAddress inetAddress = inetAddresses.nextElement();
                     if (!inetAddress.isLoopbackAddress()) {
                         if (inetAddress.getHostAddress().equals(Properties.getSocketServerIpAddress())) {
-                            Log.i(TAG, "SocketServerIpAddress is configured:" + Properties.getSocketServerIpAddress());
+                            Log.i(Constants.TAG, "SocketServerIpAddress is configured:" + Properties.getSocketServerIpAddress());
                             return true;
                         }
                     }
                 }
             }
         } catch (SocketException e) {
-            Log.e(TAG, e.toString());
+            Log.e(Constants.TAG, e.toString());
         }
 
-        Log.w(TAG, "SocketServerIpAddress is not configured");
+        Log.w(Constants.TAG, "SocketServerIpAddress is not configured");
         return false;
     }
 

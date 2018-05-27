@@ -28,11 +28,9 @@ public class SocketServer extends Service {
 
     private static final long MESSAGE_LIVE_TIME = Properties.getMessageLiveTime() * 1000;
 
-    private static final String TAG = "SocketServer";
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.v(TAG, "onStartCommand");
+        Log.v(Constants.TAG, "onStartCommand");
 
         Executors.newSingleThreadExecutor().submit(new ServerThread());
 /*
@@ -48,7 +46,7 @@ public class SocketServer extends Service {
     public void onDestroy() {
         super.onDestroy();
 
-        Log.v(TAG, "onDestroy");
+        Log.v(Constants.TAG, "onDestroy");
         try {
             serverSocket.close();
         } catch (IOException e) {
@@ -73,7 +71,7 @@ public class SocketServer extends Service {
     }
 
     public String getValueFromSocket() {
-        Log.i(TAG, "getValueFromSocket()");
+        Log.i(Constants.TAG, "getValueFromSocket()");
 
         if (isClientConnected()) {
             return getAllValuesFromSocket();
@@ -95,19 +93,19 @@ public class SocketServer extends Service {
     }
 
     public void putValueToSocket(String message) {
-        Log.i(TAG, "putValueToSocket:" + message);
+        Log.i(Constants.TAG, "putValueToSocket:" + message);
         sendToClient(message);
     }
 
     private void sendToClient(String message) {
         if (currentSocketThread == null) {
-            Log.e(TAG, "client is not connected");
+            Log.e(Constants.TAG, "client is not connected");
         } else {
-            Log.i(TAG, "writeToSocket:" + message);
+            Log.i(Constants.TAG, "writeToSocket:" + message);
             try {
                 currentSocketThread.writeToSocket(message);
             } catch (IOException e) {
-                Log.e(TAG, "Can't write to socket:" + e);
+                Log.e(Constants.TAG, "Can't write to socket:" + e);
                 e.printStackTrace();
             }
         }
@@ -120,28 +118,28 @@ public class SocketServer extends Service {
             try {
                 serverSocket = new ServerSocket(Properties.getSocketServerPort());
             } catch (IOException e) {
-                Log.e(TAG, "Can't start Server Socket:" + e);
+                Log.e(Constants.TAG, "Can't start Server Socket:" + e);
                 e.printStackTrace();
             }
 
             while (!Thread.currentThread().isInterrupted()) {
                 try {
-                    Log.i(TAG, "serverSocket.accept()");
+                    Log.i(Constants.TAG, "serverSocket.accept()");
                     socket = serverSocket.accept();
 
-                    Log.i(TAG, "Client has connected");
+                    Log.i(Constants.TAG, "Client has connected");
                     if (currentSocketThread == null) {
                         CommunicationThread task = new CommunicationThread(socket);
                         currentSocketThread = task;
                         Executors.newSingleThreadExecutor().submit(task);
                     } else {
-                        Log.e(TAG, "Client already connected. Server doesn't support multiple connections");
+                        Log.e(Constants.TAG, "Client already connected. Server doesn't support multiple connections");
                         if (socket.isConnected()) {
                             socket.close();
                         }
                     }
                 } catch (IOException e) {
-                    Log.e(TAG, e.toString());
+                    Log.e(Constants.TAG, e.toString());
                     e.printStackTrace();
                 }
             }
@@ -157,7 +155,7 @@ public class SocketServer extends Service {
             try {
                 this.input = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream()));
             } catch (IOException e) {
-                Log.e(TAG, e.toString());
+                Log.e(Constants.TAG, e.toString());
                 e.printStackTrace();
             }
         }
@@ -173,7 +171,7 @@ public class SocketServer extends Service {
                         Thread.currentThread().interrupt();
                     } else {
                         if (!inputLine.isEmpty()) {
-                            Log.i(TAG, "received from client: " + inputLine);
+                            Log.i(Constants.TAG, "received from client: " + inputLine);
 
                             socketClientValues.add(getCommand(inputLine));
 
@@ -182,12 +180,12 @@ public class SocketServer extends Service {
                         }
                     }
                 } catch (IOException e) {
-                    Log.e(TAG, e.toString());
+                    Log.e(Constants.TAG, e.toString());
                     e.printStackTrace();
                 }
             }
 
-            Log.i(TAG, "Client has disconnected");
+            Log.i(Constants.TAG, "Client has disconnected");
         }
 
         public void writeToSocket(String inputLine) throws IOException {

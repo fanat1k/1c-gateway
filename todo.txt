@@ -95,3 +95,31 @@ topic:com.e1c.mobile.PushNOtificationReceiver
 
 fe80::ff:fe44:5566%wlan0
 
+
+###
+ISO 14443-3A
+NXP MIFARE Classic 1k - Not supported
+
+###
+ISO 14443-4
+NXP MIFARE Plus S 1k / 2k
+
+
+
+    private void showLogcat() {
+        try {
+            Process process = Runtime.getRuntime().exec("logcat -d");
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            StringBuilder log=new StringBuilder();
+            String line = "";
+            while ((line = bufferedReader.readLine()) != null) {
+                log.append(line);
+            }
+            TextView tv = (TextView)findViewById(R.id.outputView);
+            tv.setText(log.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+

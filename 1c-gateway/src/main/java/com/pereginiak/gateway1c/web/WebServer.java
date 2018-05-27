@@ -20,8 +20,6 @@ public class WebServer extends NanoHTTPD {
     private static final String RESPONSE_OK = "OK";
     private static final String RESPONSE_ERR = "ERROR:bad request";
 
-    private static final String TAG = "WebServer";
-
     public WebServer(int port, WebServerListener webServerListener) {
         super(port);
         this.webServerListener = webServerListener;
@@ -30,7 +28,7 @@ public class WebServer extends NanoHTTPD {
     @Override
     public Response serve(IHTTPSession session) {
         String uri = session.getUri();
-        Log.i(TAG, "request:" + uri);
+        Log.i(Constants.TAG, "request:" + uri);
 
         Response response;
         switch (uri) {
@@ -58,7 +56,7 @@ public class WebServer extends NanoHTTPD {
 
     private Response processPutRequest(IHTTPSession session) {
         Map<String, List<String>> parameters = session.getParameters();
-        Log.i(TAG, "parameters:" + parameters.toString());
+        Log.i(Constants.TAG, "parameters:" + parameters.toString());
 
         if (!parameters.isEmpty()) {
             List<String> messageList = parameters.get(URL_PARAM_ID);

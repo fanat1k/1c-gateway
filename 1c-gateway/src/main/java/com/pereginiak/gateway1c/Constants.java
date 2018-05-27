@@ -5,4 +5,6 @@ public interface Constants {
     int RESPONSE_STATUS_OK = 0;
     int RESPONSE_STATUS_ERR_IP = 1;
     int RESPONSE_STATUS_ERR_CLIENT = 2;
+
+    String TAG = "1c-gateway";
 }
