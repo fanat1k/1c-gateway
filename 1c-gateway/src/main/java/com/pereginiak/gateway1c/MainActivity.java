@@ -28,8 +28,14 @@ public class MainActivity extends Activity {
     PendingIntent pendingIntent;
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        onNewIntent(this.getIntent());
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.v(Constants.TAG, "onCreate");
+        Log.i(Constants.TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -42,7 +48,7 @@ public class MainActivity extends Activity {
         startNfcService();
 
         //TODO(kasian @2018-04-08): check if it works to run app in background
-        moveTaskToBack(true);
+        //moveTaskToBack(true);
     }
 
 
@@ -109,6 +115,7 @@ public class MainActivity extends Activity {
     /////////////////////////////////////// NFC
     @Override
     protected void onNewIntent(Intent intent) {
+        Log.i(Constants.TAG, "onNewIntent");
         setIntent(intent);
         readFromIntent(intent);
     }
@@ -116,25 +123,28 @@ public class MainActivity extends Activity {
     @Override
     public void onPause() {
         super.onPause();
-        nfcAdapter.disableForegroundDispatch(this);
+        if (nfcAdapter != null) {
+            nfcAdapter.disableForegroundDispatch(this);
+        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        nfcAdapter.enableForegroundDispatch(this, pendingIntent, null, null);
+        if (nfcAdapter != null) {
+            nfcAdapter.enableForegroundDispatch(this, pendingIntent, null, null);
+        }
     }
 
     private void startNfcService() {
         nfcAdapter = NfcAdapter.getDefaultAdapter(this);
         if (nfcAdapter == null) {
             Toast.makeText(this, "This device doesn't support NFC.", Toast.LENGTH_LONG).show();
-            finish();
+        } else {
+            pendingIntent = PendingIntent.getActivity(this, 0,
+                    new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+            addNfcButtonSwitcherListener();
         }
-
-        pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
-
-        addNfcButtonSwitcherListener();
     }
 
     public void addNfcButtonSwitcherListener() {
@@ -158,15 +168,8 @@ public class MainActivity extends Activity {
         if (NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)
                 || NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)
                 || NfcAdapter.ACTION_NDEF_DISCOVERED.equals(action)) {
-
-            if (NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction())) {
-                Tag myTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-                showAlert(dumpTagData(myTag));
-            } else {
-                showAlert("Tag discovered:" + action);
-            }
-        } else {
-            showAlert("Unknown action=" + action);
+            Tag myTag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+            showAlert(dumpTagData(myTag, action));
         }
     }
 
@@ -189,8 +192,9 @@ public class MainActivity extends Activity {
 
 
     // from https://android.jlelse.eu/create-a-nfc-reader-application-for-android-74cf24f38a6f
-    private String dumpTagData(Tag tag) {
+    private String dumpTagData(Tag tag, String action) {
         StringBuilder sb = new StringBuilder();
+        sb.append(action).append('\n');
         byte[] id = tag.getId();
         String prefix = "android.nfc.tech.";
         sb.append("Technologies: ");

@@ -12,6 +12,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 //TODO(kasian @2018-04-27): add abstruction CommandReader to read/write commands
 public class SocketServer extends Service {
@@ -33,11 +34,10 @@ public class SocketServer extends Service {
         Log.v(Constants.TAG, "onStartCommand");
 
         Executors.newSingleThreadExecutor().submit(new ServerThread());
-/*
+
         Integer cleanInterval = Properties.getMessageCleanInterval();
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(
                 new MessageQueueCleanerThread(), cleanInterval, cleanInterval, TimeUnit.SECONDS);
-*/
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -173,7 +173,9 @@ public class SocketServer extends Service {
                         if (!inputLine.isEmpty()) {
                             Log.i(Constants.TAG, "received from client: " + inputLine);
 
-                            socketClientValues.add(getCommand(inputLine));
+                            synchronized (socketClientValues) {
+                                socketClientValues.add(getCommand(inputLine));
+                            }
 
                             //TODO(kasian @2018-03-22): answer to client? or later after successfull delivery to 1C?
                             //writeToSocket("[OK]");
@@ -196,28 +198,28 @@ public class SocketServer extends Service {
         }
     }
 
-/*
     private class MessageQueueCleanerThread implements Runnable {
         @Override
         public void run() {
-            Log.i(TAG, "start message cleaner");
+            Log.i(Constants.TAG, "start message cleaner");
             long currentTime = System.currentTimeMillis();
             while (!socketClientValues.isEmpty()) {
-                Command cmd = socketClientValues.peek();
-                if (cmd != null) {
-                    if (currentTime - cmd.getDate() > MESSAGE_LIVE_TIME) {
-                        Log.i(TAG, "remove value from queue due to timeout:" + cmd.getValue());
+                synchronized (socketClientValues) {
+                    Command cmd = socketClientValues.peek();
+                    if (cmd != null) {
+                        if (currentTime - cmd.getDate() > MESSAGE_LIVE_TIME) {
+                            Log.i(Constants.TAG, "remove value from queue due to timeout:" + cmd.getValue());
 
-                        //TODO(kasian @2018-05-07): think about synchronization since cmd could be already polled at this time
-                        socketClientValues.poll();
-                    } else {
-                        break;
+                            //TODO(kasian @2018-05-07): think about synchronization since cmd could be already polled at this time
+                            socketClientValues.poll();
+                        } else {
+                            break;
+                        }
                     }
                 }
             }
         }
     }
-*/
 
     private Command getCommand(String inputLine) {
         Command command = new Command(inputLine, System.currentTimeMillis());
